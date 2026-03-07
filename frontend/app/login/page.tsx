@@ -11,12 +11,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
@@ -28,10 +30,15 @@ export default function LoginPage() {
       } else {
         await api.post('/auth/register', { name, email, password });
         setIsLogin(true);
-        setError('Registro concluído! Faça login agora.');
+        setSuccess('Registro concluído! Faça login agora.');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Algo deu errado. Tente novamente.');
+      const message = err.response?.data?.message;
+      if (Array.isArray(message)) {
+        setError(message.join('. '));
+      } else {
+        setError(message || 'Algo deu errado. Tente novamente.');
+      }
     } finally {
       setLoading(false);
     }
@@ -48,16 +55,22 @@ export default function LoginPage() {
           </div>
         )}
 
+        {success && (
+          <div className="bg-poke-green/10 border-4 border-poke-green p-2 mb-4 text-sm text-poke-green">
+            {success}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div className="flex flex-col gap-2">
               <label className="text-xs uppercase font-bold">Nome do Treinador</label>
               <div className="relative">
-                <User className="absolute left-3 top-2.5 text-poke-black" size={20} />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-poke-black" size={20} />
                 <input
                   type="text"
                   placeholder="Ex: Ash Ketchum"
-                  className="pixel-input w-full pl-10"
+                  className="pixel-input w-full pl-12!"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -69,11 +82,11 @@ export default function LoginPage() {
           <div className="flex flex-col gap-2">
             <label className="text-xs uppercase font-bold">E-mail</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-2.5 text-poke-black" size={20} />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-poke-black" size={20} />
               <input
                 type="email"
                 placeholder="treinador@pokemail.com"
-                className="pixel-input w-full pl-10"
+                className="pixel-input w-full pl-12!"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -84,11 +97,11 @@ export default function LoginPage() {
           <div className="flex flex-col gap-2">
             <label className="text-xs uppercase font-bold">Senha</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-2.5 text-poke-black" size={20} />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-poke-black" size={20} />
               <input
                 type="password"
                 placeholder="••••••••"
-                className="pixel-input w-full pl-10"
+                className="pixel-input w-full pl-12!"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

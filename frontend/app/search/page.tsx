@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
+import Image from 'next/image';
 import { Search, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { getTypeColor } from '@/lib/pokemonTypes';
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
@@ -91,22 +93,40 @@ export default function SearchPage() {
 
       {pokemon && (
         <div className="bg-poke-white pixel-border p-8 flex flex-col md:flex-row items-center gap-8 animate-in fade-in zoom-in duration-300">
-          <div className="w-48 h-48 bg-gray-100 pixel-border flex items-center justify-center p-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <div className="w-48 h-48 bg-gray-100 pixel-border flex items-center justify-center p-4 relative">
+            <Image
               src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.pokedexNumber}.png`}
               alt={pokemon.name}
-              className="w-full h-full object-contain"
+              fill
+              className="object-contain p-4"
+              priority
             />
           </div>
 
           <div className="flex-grow space-y-4">
             <div>
               <span className="text-xs opacity-50 font-retro">Nº {pokemon.pokedexNumber.toString().padStart(3, '0')}</span>
-              <h3 className="text-2xl">{pokemon.name}</h3>
-              <span className="bg-poke-blue text-white text-xs px-3 py-1 rounded-full uppercase">
-                {pokemon.type}
-              </span>
+              <h3 className="text-2xl font-retro uppercase">{pokemon.name}</h3>
+              <div className="flex gap-2 flex-wrap mt-1">
+                {Array.isArray(pokemon.type) ? (
+                  pokemon.type.map((t: string) => (
+                    <span 
+                      key={t}
+                      className="text-white text-xs px-3 py-1 rounded-full uppercase font-bold shadow-sm"
+                      style={{ backgroundColor: getTypeColor(t) }}
+                    >
+                      {t}
+                    </span>
+                  ))
+                ) : (
+                  <span 
+                    className="text-white text-xs px-3 py-1 rounded-full uppercase font-bold shadow-sm"
+                    style={{ backgroundColor: getTypeColor(String(pokemon.type)) }}
+                  >
+                    {String(pokemon.type)}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-sm">
