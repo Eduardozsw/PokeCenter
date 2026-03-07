@@ -31,6 +31,6 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 
-# Start the application using node directly to be more explicit
-# We use the shell form to allow flexible path if needed, but dist/main should be standard
-CMD ["node", "dist/main.js"]
+# Start the application
+# Based on your build output, the file is at dist/src/main.js
+CMD ["node", "dist/src/main.js"]
