@@ -9,6 +9,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"] || "",
+    // No Prisma 7, o CLI usa esta URL para migrações. 
+    // Para o Supabase, isso DEVE ser a conexão direta (porta 5432).
+    url: process.env["DIRECT_URL"] || "",
   },
 });
