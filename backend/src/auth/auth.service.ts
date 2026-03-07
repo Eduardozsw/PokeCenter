@@ -19,13 +19,11 @@ export class AuthService {
     if (userExists) {
       throw new ConflictException('Email already registered');
     }
-    const user = await this.usersService.create({
+    return this.usersService.create({
       name,
       email,
       password: pass,
     });
-    const { password: _password, ...result } = user;
-    return result;
   }
 
   async login(email: string, pass: string) {
@@ -48,6 +46,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
+        profileColor: user.profileColor,
       },
     };
   }

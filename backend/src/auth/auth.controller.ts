@@ -1,7 +1,9 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from './auth.guard';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -11,37 +13,18 @@ export class AuthController {
   @Public()
   @Post('register')
   @ApiOperation({ summary: 'Registra um novo treinador' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string' },
-        email: { type: 'string' },
-        password: { type: 'string' },
-      },
-      required: ['name', 'email', 'password'],
-    },
-  })
-  register(@Body() body: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    return this.authService.register(body.name, body.email, body.password);
+  register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(
+      registerDto.name,
+      registerDto.email,
+      registerDto.password,
+    );
   }
 
   @Public()
   @Post('login')
   @ApiOperation({ summary: 'Realiza login e retorna o token JWT' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        email: { type: 'string' },
-        password: { type: 'string' },
-      },
-      required: ['email', 'password'],
-    },
-  })
-  login(@Body() body: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    return this.authService.login(body.email, body.password);
+  login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto.email, loginDto.password);
   }
 }
