@@ -48,7 +48,7 @@
 }
 
 .pixel-button {
-  @apply bg-poke-white text-poke-black pixel-border p-2 cursor-pointer active:translate-x-[2px] active:translate-y-[2px] active:shadow-none hover:bg-poke-red hover:text-poke-white transition-all inline-flex items-center justify-center;
+  @apply bg-poke-white text-poke-black pixel-border p-2 cursor-pointer active:translate-x-0.5 active:translate-y-0.5 active:shadow-none hover:bg-poke-red hover:text-poke-white transition-all inline-flex items-center justify-center;
   font-family: var(--font-retro);
   font-size: 0.75rem;
 }
