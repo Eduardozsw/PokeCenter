@@ -14,7 +14,10 @@ export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService, private reflector: Reflector) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -27,22 +30,39 @@ export class AuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
+    
     if (!token) {
+      console.log('AuthGuard: No token found in Authorization header');
       throw new UnauthorizedException();
     }
+    
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET || 'secretKey',
-      });
+      // Log length and first/last chars for debugging (safe-ish)
+      console.log(`AuthGuard: Verifying token (Length: ${token.length})`);
+      console.log(`AuthGuard: Token starts with: ${token.substring(0, 10)}...`);
+      
+      const payload = await this.jwtService.verifyAsync(token);
       request['user'] = payload;
-    } catch {
+    } catch (e: any) {
+      console.error('AuthGuard: JWT Verification Error:', e.message);
       throw new UnauthorizedException();
     }
     return true;
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    const authHeader = request.headers.authorization;
+    if (!authHeader) return undefined;
+    
+    console.log('AuthGuard: Raw Authorization Header:', authHeader);
+    
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2) {
+      console.log('AuthGuard: Header does not have 2 parts (Bearer <token>)');
+      return undefined;
+    }
+    
+    const [type, token] = parts;
     return type === 'Bearer' ? token : undefined;
   }
 }
