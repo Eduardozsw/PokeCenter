@@ -31,9 +31,9 @@ export class PokemonService {
       return {
         pokedexNumber: data.id,
         name: data.name,
-        type: data.types.map((t) => t.type.name).join(', '),
+        type: data.types.map((t) => t.type.name),
         hp: hpStat ? hpStat.base_stat : 0,
-        level: 1,
+        level: Math.floor(Math.random() * 20) + 1,
       };
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -64,7 +64,7 @@ export class PokemonService {
     });
   }
 
-  async update(userId: string, id: string, level: number) {
+  async update(userId: string, id: string, updateData: { level?: number; nickname?: string; isFavorite?: boolean }) {
     const pokemon = await this.prisma.pokemon.findFirst({
       where: { id, userId },
     });
@@ -73,9 +73,23 @@ export class PokemonService {
       throw new HttpException('Pokémon não encontrado na sua lista', HttpStatus.NOT_FOUND);
     }
 
+    // Check favorites limit if user is trying to favorite this pokemon
+    if (updateData.isFavorite === true && pokemon.isFavorite === false) {
+      const favoritesCount = await this.prisma.pokemon.count({
+        where: { userId, isFavorite: true },
+      });
+
+      if (favoritesCount >= 5) {
+        throw new HttpException(
+          'Você já possui 5 Pokémons favoritados. Desmarque um para favoritar outro.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    }
+
     return this.prisma.pokemon.update({
       where: { id },
-      data: { level },
+      data: updateData,
     });
   }
 

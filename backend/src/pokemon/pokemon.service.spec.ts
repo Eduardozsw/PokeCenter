@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PokemonService } from './pokemon.service';
 import { HttpService } from '@nestjs/axios';
+import { PrismaService } from '../prisma/prisma.service';
 import { of } from 'rxjs';
 import { AxiosResponse } from 'axios';
 
@@ -16,6 +17,18 @@ describe('PokemonService', () => {
           provide: HttpService,
           useValue: {
             get: jest.fn(),
+          },
+        },
+        {
+          provide: PrismaService,
+          useValue: {
+            pokemon: {
+              create: jest.fn(),
+              findMany: jest.fn(),
+              findFirst: jest.fn(),
+              update: jest.fn(),
+              delete: jest.fn(),
+            },
           },
         },
       ],
@@ -39,21 +52,21 @@ describe('PokemonService', () => {
       .spyOn(httpService, 'get')
       .mockReturnValue(of(mockResponse as AxiosResponse));
 
-    const result = await service.getPokemon('pikachu');
+    const result = await service.getPokemonFromApi('pikachu');
 
-    expect(result).toEqual({
-      pokedexNumber: 25,
-      name: 'pikachu',
-      type: 'electric',
-      hp: 35,
-      level: 1,
-    });
+    expect(result.pokedexNumber).toBe(25);
+    expect(result.name).toBe('pikachu');
+    expect(result.type).toEqual(['electric']);
+    expect(result.hp).toBe(35);
+    expect(result.level).toBeGreaterThanOrEqual(1);
+    expect(result.level).toBeLessThanOrEqual(20);
+    
     expect(httpService.get).toHaveBeenCalledWith(
       'https://pokeapi.co/api/v2/pokemon/pikachu',
     );
   });
 
-  it('should join multiple types with a comma', async () => {
+  it('should return multiple types correctly', async () => {
     const mockResponse: Partial<AxiosResponse> = {
       data: {
         id: 6,
@@ -67,9 +80,9 @@ describe('PokemonService', () => {
       .spyOn(httpService, 'get')
       .mockReturnValue(of(mockResponse as AxiosResponse));
 
-    const result = await service.getPokemon('charizard');
+    const result = await service.getPokemonFromApi('charizard');
 
-    expect(result.type).toBe('fire, flying');
+    expect(result.type).toEqual(['fire', 'flying']);
   });
 
   it('should handle case-insensitive names', async () => {
@@ -86,7 +99,7 @@ describe('PokemonService', () => {
       .spyOn(httpService, 'get')
       .mockReturnValue(of(mockResponse as AxiosResponse));
 
-    await service.getPokemon('PIKACHU');
+    await service.getPokemonFromApi('PIKACHU');
 
     expect(httpService.get).toHaveBeenCalledWith(
       'https://pokeapi.co/api/v2/pokemon/pikachu',

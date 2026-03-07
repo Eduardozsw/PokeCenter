@@ -1,6 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Request } from '@nestjs/common';
 import { PokemonService } from './pokemon.service';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { CreatePokemonDto } from './dto/create-pokemon.dto';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 
 @ApiTags('pokemon')
 @ApiBearerAuth()
@@ -16,18 +18,9 @@ export class PokemonController {
 
   @Post()
   @ApiOperation({ summary: 'Adiciona um Pokémon à sua coleção' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', description: 'Nome ou ID do Pokémon para buscar e salvar' },
-      },
-      required: ['name'],
-    },
-  })
-  create(@Request() req: any, @Body('name') name: string) {
+  create(@Request() req: any, @Body() createPokemonDto: CreatePokemonDto) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return this.pokemonService.create(req.user.sub as string, name);
+    return this.pokemonService.create(req.user.sub as string, createPokemonDto.name);
   }
 
   @Get()
@@ -38,23 +31,14 @@ export class PokemonController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Altera o nível de um Pokémon da sua coleção' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        level: { type: 'number' },
-      },
-      required: ['level'],
-    },
-  })
+  @ApiOperation({ summary: 'Atualiza dados de um Pokémon (nível, apelido, favorito)' })
   update(
     @Request() req: any,
     @Param('id') id: string,
-    @Body('level') level: number,
+    @Body() updateDto: UpdatePokemonDto,
   ) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return this.pokemonService.update(req.user.sub as string, id, level);
+    return this.pokemonService.update(req.user.sub as string, id, updateDto);
   }
 
   @Delete(':id')
